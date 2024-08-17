@@ -1,0 +1,30 @@
+{
+    "control1_stack_normalized.npy": {
+        "Shape": [
+            36,
+            572,
+            217,
+            3
+        ],
+        "Data Type": "float32",
+        "Memory Usage": "51.14 MB",
+        "Mean": "0.1807",
+        "Standard Deviation": "0.0829",
+        "Min Value": "0.0000",
+        "Max Value": "0.5373"
+    },
+    "control2_stack_normalized.npy": {
+        "Shape": [
+            36,
+            572,
+            217,
+            3
+        ],
+        "Data Type": "float32",
+        "Memory Usage": "51.14 MB",
+        "Mean": "0.2182",
+        "Standard Deviation": "0.1121",
+        "Min Value": "0.0000",
+        "Max Value": "0.6078"
+    }
+}

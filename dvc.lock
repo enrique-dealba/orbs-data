@@ -39,3 +39,31 @@ stages:
       hash: md5
       md5: 7cfaa069939f0a744c8015c096cb0cd5
       size: 600
+  analyze:
+    cmd: python analyze_data.py
+    deps:
+    - path: analyze_data.py
+      hash: md5
+      md5: 695674e29246aaef533ca74be9f4c9b8
+      size: 3158
+    - path: data/preprocessed/control1_stack_normalized.npy
+      hash: md5
+      md5: 5ae12ef3bc03c7db1d67b7f609ebe574
+      size: 53621696
+    - path: data/preprocessed/control2_stack_normalized.npy
+      hash: md5
+      md5: 2f276e1e314a22c424886932889c9179
+      size: 53621696
+    outs:
+    - path: analysis_results/data_info.json
+      hash: md5
+      md5: f90ea040a2ba99727bdda4bb7523ab1e
+      size: 672
+    - path: analysis_results/intensity_distribution.png
+      hash: md5
+      md5: 56b3480e4a35a765a8e2decf37272d17
+      size: 77238
+    - path: analysis_results/random_frames.png
+      hash: md5
+      md5: 63079b9bef8cdb1bee757e0581489c8a
+      size: 293489

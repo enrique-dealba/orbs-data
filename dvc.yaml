@@ -16,4 +16,18 @@ stages:
       - data/preprocessed/control1_stack_normalized.npy
       - data/preprocessed/control2_stack_normalized.npy
     # outs:
-    #   - model.pkl  # Uncomment this when you actually save a model
+    #   - model.pkl  # TODO: Uncomment this when we have actual model
+
+  analyze:
+    cmd: python analyze_data.py
+    deps:
+      - analyze_data.py
+      - data/preprocessed/control1_stack_normalized.npy
+      - data/preprocessed/control2_stack_normalized.npy
+    outs:
+      - analysis_results/data_info.json:
+          cache: false
+      - analysis_results/random_frames.png:
+          cache: false
+      - analysis_results/intensity_distribution.png:
+          cache: false
