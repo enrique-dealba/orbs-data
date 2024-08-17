@@ -1,0 +1,41 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: python preprocess.py
+    deps:
+    - path: data/raw_avis/control1_stack.avi
+      hash: md5
+      md5: 7dc956e7b0f64afa4bc02711169e002b
+      size: 4535220
+    - path: data/raw_avis/control2_stack.avi
+      hash: md5
+      md5: 46df8a81a529dfd983b2483e907c47c1
+      size: 4535220
+    - path: preprocess.py
+      hash: md5
+      md5: 9744a97845d2c976f432e7b61acaa236
+      size: 1306
+    outs:
+    - path: data/preprocessed/control1_stack_normalized.npy
+      hash: md5
+      md5: 5ae12ef3bc03c7db1d67b7f609ebe574
+      size: 53621696
+    - path: data/preprocessed/control2_stack_normalized.npy
+      hash: md5
+      md5: 2f276e1e314a22c424886932889c9179
+      size: 53621696
+  train:
+    cmd: python train.py
+    deps:
+    - path: data/preprocessed/control1_stack_normalized.npy
+      hash: md5
+      md5: 5ae12ef3bc03c7db1d67b7f609ebe574
+      size: 53621696
+    - path: data/preprocessed/control2_stack_normalized.npy
+      hash: md5
+      md5: 2f276e1e314a22c424886932889c9179
+      size: 53621696
+    - path: train.py
+      hash: md5
+      md5: 7cfaa069939f0a744c8015c096cb0cd5
+      size: 600
