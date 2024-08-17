@@ -1,0 +1,19 @@
+stages:
+  preprocess:
+    cmd: python preprocess.py
+    deps:
+      - preprocess.py
+      - data/raw_avis/control1_stack.avi
+      - data/raw_avis/control2_stack.avi
+    outs:
+      - data/preprocessed/control1_stack_normalized.npy
+      - data/preprocessed/control2_stack_normalized.npy
+
+  train:
+    cmd: python train.py
+    deps:
+      - train.py
+      - data/preprocessed/control1_stack_normalized.npy
+      - data/preprocessed/control2_stack_normalized.npy
+    # outs:
+    #   - model.pkl  # Uncomment this when you actually save a model

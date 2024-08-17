@@ -1,47 +1,24 @@
 import os
-from typing import List, Tuple
 
 import cv2
+import dvc.api
 import numpy as np
 
 
-def load_avi_to_numpy(file_path: str) -> np.ndarray:
-    """Loads AVIs and converts to numpy array."""
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"The file {file_path} does not exist.")
-
+def load_avi_to_numpy(file_path):
     cap = cv2.VideoCapture(file_path)
-    if not cap.isOpened():
-        raise ValueError(f"Error opening video file {file_path}")
-
     frames = []
     while True:
         ret, frame = cap.read()
         if not ret:
             break
         frames.append(frame)
-
     cap.release()
     return np.array(frames)
 
 
-def normalize_video_data(video_data: np.ndarray) -> np.ndarray:
-    """Normalizes video data to range [0, 1]."""
+def normalize_video_data(video_data):
     return video_data.astype(np.float32) / 255.0
-
-
-def preprocess_avi_files(file_paths: List[str]) -> List[Tuple[str, np.ndarray]]:
-    """Preprocess multiple AVI files."""
-    preprocessed_data = []
-    for file_path in file_paths:
-        try:
-            video_data = load_avi_to_numpy(file_path)
-            normalized_data = normalize_video_data(video_data)
-            file_name = os.path.basename(file_path)
-            preprocessed_data.append((file_name, normalized_data))
-        except (FileNotFoundError, ValueError) as e:
-            print(f"Error processing {file_path}: {str(e)}")
-    return preprocessed_data
 
 
 def main():
@@ -50,12 +27,25 @@ def main():
         "control2_stack.avi",
     ]
 
-    preprocessed_videos = preprocess_avi_files(avi_files)
+    input_dir = "data/raw_avis"
+    output_dir = "data/preprocessed"
+    os.makedirs(output_dir, exist_ok=True)
 
-    for file_name, video_data in preprocessed_videos:
-        print(
-            f"Preprocessed {file_name}: Shape {video_data.shape}, Data range [{video_data.min()}, {video_data.max()}]"
-        )
+    for avi_file in avi_files:
+        # Use DVC to get the path of the input file
+        with dvc.api.open(os.path.join(input_dir, avi_file)) as f:
+            input_path = f.name
+
+        # Load and preprocess the data
+        print(f"Processing {avi_file}...")
+        video_data = load_avi_to_numpy(input_path)
+        normalized_data = normalize_video_data(video_data)
+
+        # Save the preprocessed data
+        output_filename = os.path.splitext(avi_file)[0] + "_normalized.npy"
+        output_path = os.path.join(output_dir, output_filename)
+        np.save(output_path, normalized_data)
+        print(f"Saved preprocessed data to {output_path}")
 
 
 if __name__ == "__main__":
