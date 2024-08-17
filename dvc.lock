@@ -67,3 +67,39 @@ stages:
       hash: md5
       md5: 63079b9bef8cdb1bee757e0581489c8a
       size: 293489
+  split_data:
+    cmd: python split_data.py
+    deps:
+    - path: data/preprocessed/control1_stack_normalized.npy
+      hash: md5
+      md5: 5ae12ef3bc03c7db1d67b7f609ebe574
+      size: 53621696
+    - path: data/preprocessed/control2_stack_normalized.npy
+      hash: md5
+      md5: 2f276e1e314a22c424886932889c9179
+      size: 53621696
+    - path: split_data.py
+      hash: md5
+      md5: 9ceee4c3ebdfb2fa4b3df8e86df1a86b
+      size: 2293
+    outs:
+    - path: data/split/control1_stack_normalized_train.npy
+      hash: md5
+      md5: dba5031942d028b91a84bace17be41c9
+      size: 41705792
+    - path: data/split/control1_stack_normalized_val.npy
+      hash: md5
+      md5: 069f175b3011b0b42d7ca85ea4ab0963
+      size: 11916032
+    - path: data/split/control2_stack_normalized_train.npy
+      hash: md5
+      md5: a0f9e653fde87baf7c919e0e86a91572
+      size: 41705792
+    - path: data/split/control2_stack_normalized_val.npy
+      hash: md5
+      md5: 9a1216b0db822466ebb07adcce09ac12
+      size: 11916032
+    - path: data/split/split_indices.json
+      hash: md5
+      md5: df3c4e5719675359b9d27f2a1ca994b4
+      size: 378

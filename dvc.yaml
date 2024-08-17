@@ -9,19 +9,23 @@ stages:
       - data/preprocessed/control1_stack_normalized.npy
       - data/preprocessed/control2_stack_normalized.npy
 
-  train:
-    cmd: python train.py
+  split_data:
+    cmd: python split_data.py
     deps:
-      - train.py
+      - split_data.py
       - data/preprocessed/control1_stack_normalized.npy
       - data/preprocessed/control2_stack_normalized.npy
-    # outs:
-    #   - model.pkl  # TODO: Uncomment this when we have actual model
+    outs:
+      - data/split/control1_stack_normalized_train.npy
+      - data/split/control1_stack_normalized_val.npy
+      - data/split/control2_stack_normalized_train.npy
+      - data/split/control2_stack_normalized_val.npy
+      - data/split/split_indices.json
 
   analyze:
-    cmd: python analyze_data.py
+    cmd: python analyze_preprocessed_data.py
     deps:
-      - analyze_data.py
+      - analyze_preprocessed_data.py
       - data/preprocessed/control1_stack_normalized.npy
       - data/preprocessed/control2_stack_normalized.npy
     outs:
@@ -31,3 +35,14 @@ stages:
           cache: false
       - analysis_results/intensity_distribution.png:
           cache: false
+
+  train:
+    cmd: python train.py
+    deps:
+      - train.py
+      - data/split/control1_stack_normalized_train.npy
+      - data/split/control1_stack_normalized_val.npy
+      - data/split/control2_stack_normalized_train.npy
+      - data/split/control2_stack_normalized_val.npy
+    # outs:
+    #   - model.pkl  # TODO: Uncomment this when have model
