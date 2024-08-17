@@ -46,8 +46,8 @@ def preprocess_avi_files(file_paths: List[str]) -> List[Tuple[str, np.ndarray]]:
 
 def main():
     avi_files = [
-        "/control1_stack.avi",
-        "/control2_stack.avi",
+        "control1_stack.avi",
+        "control2_stack.avi",
     ]
 
     preprocessed_videos = preprocess_avi_files(avi_files)
