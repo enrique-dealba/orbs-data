@@ -1,70 +1,92 @@
-import numpy as np
-import os
 import json
-from sklearn.model_selection import train_test_split
-import dvc.api
+import os
+from typing import Dict, List, Tuple
 
-def load_preprocessed_data():
-    preprocessed_files = [
-        "control1_stack_normalized.npy",
-        "control2_stack_normalized.npy",
-    ]
+import dvc.api
+import numpy as np
+from sklearn.model_selection import train_test_split
+
+
+def load_preprocessed_data() -> Dict[str, np.ndarray]:
+    """Loads preprocessed .npy files from data/preprocessed dir."""
     data = {}
-    for file in preprocessed_files:
-        with dvc.api.open(os.path.join("data/preprocessed", file), mode="rb") as f:
-            data[file] = np.load(f)
+    preprocessed_dir = "data/preprocessed"
+    for file in os.listdir(preprocessed_dir):
+        if file.endswith(".npy"):
+            with dvc.api.open(os.path.join(preprocessed_dir, file), mode="rb") as f:
+                data[file] = np.load(f)
     return data
 
-def split_and_save_data(data, test_size=0.2, random_state=42):
-    split_data = {}
-    for name, array in data.items():
-        # Assuming the first dimension is the number of frames
-        n_frames = array.shape[0]
-        indices = np.arange(n_frames)
-        
-        train_indices, val_indices = train_test_split(
-            indices, test_size=test_size, random_state=random_state
-        )
-        
-        split_data[name] = {
-            'train': array[train_indices],
-            'val': array[val_indices]
-        }
-    
-    # Save the split data
-    os.makedirs('data/split', exist_ok=True)
-    for name, splits in split_data.items():
-        np.save(f'data/split/{name[:-4]}_train.npy', splits['train'])
-        np.save(f'data/split/{name[:-4]}_val.npy', splits['val'])
-    
-    # Save the split indices for reproducibility
-    split_indices = {
-        name: {
-            'train': train_indices.tolist(),
-            'val': val_indices.tolist()
-        } for name, (train_indices, val_indices) in zip(
-            data.keys(),
-            [(train_test_split(np.arange(arr.shape[0]), test_size=test_size, random_state=random_state)) for arr in data.values()]
-        )
-    }
-    
-    with open('data/split/split_indices.json', 'w') as f:
-        json.dump(split_indices, f)
 
-def load_split_data():
-    split_data = {}
-    for file in os.listdir('data/split'):
-        if file.endswith('.npy'):
-            name, split_type = os.path.splitext(file)[0].rsplit('_', 1)
-            if name not in split_data:
-                split_data[name] = {}
-            split_data[name][split_type] = np.load(os.path.join('data/split', file))
-    return split_data
+def combine_data(data: Dict[str, np.ndarray]) -> np.ndarray:
+    """
+    Combine all data arrays into a single numpy array.
+    Assumes all arrays have the same shape except for the first dimension.
+    """
+    return np.concatenate(list(data.values()), axis=0)
+
+
+def split_data(
+    data: np.ndarray, test_size: float = 0.2, random_state: int = 42
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Split the combined data into training and validation sets.
+    Maintains the temporal structure by splitting along the first axis.
+    """
+    n_samples = data.shape[0]
+    indices = np.arange(n_samples)
+    train_indices, val_indices = train_test_split(
+        indices, test_size=test_size, random_state=random_state
+    )
+    return data[train_indices], data[val_indices]
+
+
+def save_data(
+    train_data: np.ndarray, val_data: np.ndarray, output_dir: str = "data/split"
+):
+    """Saves train and val sets to specified output dir."""
+    os.makedirs(output_dir, exist_ok=True)
+    np.save(os.path.join(output_dir, "train_data.npy"), train_data)
+    np.save(os.path.join(output_dir, "val_data.npy"), val_data)
+
+
+def save_split_info(
+    train_indices: List[int], val_indices: List[int], output_dir: str = "data/split"
+):
+    """Saves info about train/val split for reproducibility."""
+    split_info = {
+        "train_indices": train_indices.tolist(),
+        "val_indices": val_indices.tolist(),
+    }
+    with open(os.path.join(output_dir, "split_info.json"), "w") as f:
+        json.dump(split_info, f)
+
 
 def main():
+    # Load all preprocessed data
     data = load_preprocessed_data()
-    split_and_save_data(data)
-    print("Data has been split and saved in 'data/split' directory.")
+
+    # Combine all data
+    combined_data = combine_data(data)
+
+    # Split data into train and validation sets
+    train_data, val_data = split_data(combined_data)
+
+    # Save the split data
+    save_data(train_data, val_data)
+
+    # Save split information
+    n_samples = combined_data.shape[0]
+    indices = np.arange(n_samples)
+    train_indices, val_indices = train_test_split(
+        indices, test_size=0.2, random_state=42
+    )
+    save_split_info(train_indices, val_indices)
+
+    print(
+        f"Data split complete. Shape of train data: {train_data.shape}, Shape of validation data: {val_data.shape}"
+    )
+
 
 if __name__ == "__main__":
     main()

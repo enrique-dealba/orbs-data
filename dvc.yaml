@@ -16,18 +16,16 @@ stages:
       - data/preprocessed/control1_stack_normalized.npy
       - data/preprocessed/control2_stack_normalized.npy
     outs:
-      - data/split/control1_stack_normalized.npy_train.npy
-      - data/split/control1_stack_normalized.npy_val.npy
-      - data/split/control2_stack_normalized.npy_train.npy
-      - data/split/control2_stack_normalized.npy_val.npy
-      - data/split/split_indices.json
+      - data/split/train_data.npy
+      - data/split/val_data.npy
+      - data/split/split_info.json
 
   analyze:
-    cmd: python analyze_preprocessed_data.py
+    cmd: python analyze_data.py
     deps:
-      - analyze_preprocessed_data.py
-      - data/preprocessed/control1_stack_normalized.npy
-      - data/preprocessed/control2_stack_normalized.npy
+      - analyze_data.py
+      - data/split/train_data.npy
+      - data/split/val_data.npy
     outs:
       - analysis_results/data_info.json:
           cache: false
@@ -40,9 +38,7 @@ stages:
     cmd: python train.py
     deps:
       - train.py
-      - data/split/control1_stack_normalized_train.npy
-      - data/split/control1_stack_normalized_val.npy
-      - data/split/control2_stack_normalized_train.npy
-      - data/split/control2_stack_normalized_val.npy
+      - data/split/train_data.npy
+      - data/split/val_data.npy
     # outs:
-    #   - model.pkl  # TODO: Uncomment this when have model
+    #   - models/trained_model.pkl  # TODO: Uncomment when we have model
