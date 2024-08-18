@@ -4,3 +4,5 @@ matplotlib
 seaborn
 dvc
 scikit-learn
+torch
+wandb
