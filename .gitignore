@@ -2,3 +2,4 @@
 *.npy
 data/split/*.npy
 data/preprocessed/
+analysis_results/
