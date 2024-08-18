@@ -1,3 +1,4 @@
 /data/raw_avis/*.avi
 *.npy
 data/split/*.npy
+data/preprocessed/
