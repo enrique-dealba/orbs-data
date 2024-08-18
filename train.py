@@ -1,29 +1,24 @@
-import os
-
 import dvc.api
 import numpy as np
 
 
-def load_preprocessed_data():
-    preprocessed_files = [
-        "control1_stack_normalized.npy",
-        "control2_stack_normalized.npy",
-    ]
-
-    data = {}
-    for file in preprocessed_files:
-        with dvc.api.open(os.path.join("data/preprocessed", file), mode="rb") as f:
-            data[file] = np.load(f)
-    return data
+def load_split_data():
+    with dvc.api.open("data/split/train_data.npy", mode="rb") as f:
+        train_data = np.load(f)
+    with dvc.api.open("data/split/val_data.npy", mode="rb") as f:
+        val_data = np.load(f)
+    return train_data, val_data
 
 
 def main():
-    preprocessed_data = load_preprocessed_data()
+    train_data, val_data = load_split_data()
 
-    for file, data in preprocessed_data.items():
-        print(f"{file} shape: {data.shape}")
+    print(f"Train data shape: {train_data.shape}")
+    print(f"Validation data shape: {val_data.shape}")
 
-    # Model goes here
+    # TODO: model training
+    # model = train_model(train_data, val_data)
+    # model.save(...)
 
 
 if __name__ == "__main__":

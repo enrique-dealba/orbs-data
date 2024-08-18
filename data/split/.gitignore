@@ -3,3 +3,4 @@
 /control2_stack_normalized_train.npy
 /control2_stack_normalized_val.npy
 /split_indices.json
+/split_info.json
