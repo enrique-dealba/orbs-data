@@ -5,26 +5,31 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import DataLoader
+
 import wandb
-from torch.utils.data import DataLoader, TensorDataset
-
+from utils import save_model, visualize_reconstruction
 from vae_cnn import VAECNN
-import torch.nn.functional as F
-from utils import save_model
 
 
-def vae_loss(recon_x: torch.Tensor, x: torch.Tensor, mu: torch.Tensor, logvar: torch.Tensor) -> torch.Tensor:
-    BCE = F.binary_cross_entropy(recon_x, x, reduction='sum')
+def vae_loss(
+    recon_x: torch.Tensor, x: torch.Tensor, mu: torch.Tensor, logvar: torch.Tensor
+) -> torch.Tensor:
+    BCE = nn.functional.binary_cross_entropy(recon_x, x, reduction="sum")
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     return BCE + KLD
 
 
-def load_split_data() -> Tuple[np.ndarray, np.ndarray]:
+def load_split_data() -> Tuple[torch.Tensor, torch.Tensor]:
     with dvc.api.open("data/split/train_data.npy", mode="rb") as f:
         train_data = np.load(f)
     with dvc.api.open("data/split/val_data.npy", mode="rb") as f:
         val_data = np.load(f)
-    print(f"Loaded data shapes - Train: {train_data.shape}, Val: {val_data.shape}")
+
+    # Convert to PyTorch tensors and permute dimensions
+    train_data = torch.from_numpy(train_data).float().permute(0, 3, 1, 2)
+    val_data = torch.from_numpy(val_data).float().permute(0, 3, 1, 2)
+
     return train_data, val_data
 
 
@@ -37,18 +42,14 @@ def train_model(
     num_epochs: int,
 ) -> Tuple[nn.Module, float, float]:
     model.to(device)
-    final_train_loss = 0.0
-    final_val_loss = 0.0
     for epoch in range(num_epochs):
         model.train()
         train_loss = 0
         for batch in train_loader:
+            x = batch[0].to(device)
             optimizer.zero_grad()
-            x = batch[0].to(device)  # Assuming the loader returns a tuple
-            print(f"Train batch shape: {x.shape}")
-            recon_x, mean, logvar = model(x)
-            print(f"Train recon_x shape: {recon_x.shape}")
-            loss = vae_loss(recon_x, x, mean, logvar)
+            recon_x, mu, logvar = model(x)
+            loss = vae_loss(recon_x, x, mu, logvar)
             loss.backward()
             optimizer.step()
             train_loss += loss.item()
@@ -57,35 +58,29 @@ def train_model(
         val_loss = 0
         with torch.no_grad():
             for batch in val_loader:
-                x = batch[0].to(device)  # Assuming the loader returns a tuple
-                print(f"Val batch shape: {x.shape}")
-                recon_x, mean, logvar = model(x)
-                print(f"Val recon_x shape: {recon_x.shape}")
-                loss = vae_loss(recon_x, x, mean, logvar)
+                x = batch[0].to(device)
+                recon_x, mu, logvar = model(x)
+                loss = vae_loss(recon_x, x, mu, logvar)
                 val_loss += loss.item()
 
         train_loss /= len(train_loader.dataset)
         val_loss /= len(val_loader.dataset)
-
-        final_train_loss = train_loss  # Update final losses
-        final_val_loss = val_loss
 
         wandb.log({"train_loss": train_loss, "val_loss": val_loss})
         print(
             f"Epoch {epoch+1}/{num_epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}"
         )
 
-    return model, final_train_loss, final_val_loss
+    return model, train_loss, val_loss
 
 
 def main():
     # Hyperparameters
-    latent_dim = 16
+    latent_dim = 32
     batch_size = 2
     learning_rate = 3e-4
-    num_epochs = 5
+    num_epochs = 10
 
-    # Initialize wandb
     wandb.init(
         project="vae-convlstm-noise",
         config={
@@ -96,43 +91,49 @@ def main():
         },
     )
 
-    # Load and preprocess data
     train_data, val_data = load_split_data()
-    train_data = torch.from_numpy(train_data).float()
-    val_data = torch.from_numpy(val_data).float()
 
-    print(f"Train data shape after loading: {train_data.shape}")
-    print(f"Val data shape after loading: {val_data.shape}")
-
-    train_dataset = TensorDataset(train_data)
-    val_dataset = TensorDataset(val_data)
+    # Create datasets without assuming labels
+    train_dataset = torch.utils.data.TensorDataset(train_data)
+    val_dataset = torch.utils.data.TensorDataset(val_data)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
-    # Initialize model
-    input_shape = train_data.shape[1:] # (572, 217, 3)
-    latent_dim = 16
+    input_shape = train_data.shape[1:]  # Now will be (3, 572, 217)
     encoder_channels = [4, 8, 16, 32]  # Customizable
     model = VAECNN(input_shape, latent_dim, encoder_channels)
-    print(f"Model structure:\n{model}")
 
-    # Setup optimizer
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-    # Train model
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
+
     model, final_train_loss, final_val_loss = train_model(
         model, train_loader, val_loader, optimizer, device, num_epochs
     )
 
-    # Save model with unique identifier
     final_metrics = {
         "final_train_loss": final_train_loss,
         "final_val_loss": final_val_loss,
     }
     save_model(model, wandb.config, final_metrics)
+
+    # Visualize reconstructions for a few samples
+    model.eval()
+    with torch.no_grad():
+        for i, batch in enumerate(val_loader):
+            if i >= 4:  # Visualize first 4 samples
+                break
+            x = batch[0].to(device)  # (batch_size, channels, height, width)
+            filename = f"reconstruction_{i}.png"
+            visualize_reconstruction(
+                model,
+                x,
+                save_dir="reconstructions",
+                filename=filename,
+                log_to_wandb=True,
+            )
 
     wandb.finish()
 

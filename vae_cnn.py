@@ -51,24 +51,26 @@ class VAECNN(nn.Module):
         stride: int = 2,
     ):
         super(VAECNN, self).__init__()
-        self.input_shape = input_shape
+        self.input_shape = input_shape  # Expected to be (channels, height, width)
         self.latent_dim = latent_dim
-        self.encoder_channels = [input_shape[2]] + encoder_channels
+        self.encoder_channels = [input_shape[0]] + encoder_channels
         self.kernel_size = kernel_size
         self.stride = stride
 
         # Calculate the dimension after flattening
         self.encoder_output_height = math.ceil(
-            input_shape[0] / (stride ** len(encoder_channels))
+            input_shape[1] / (stride ** len(encoder_channels))
         )
         self.encoder_output_width = math.ceil(
-            input_shape[1] / (stride ** len(encoder_channels))
+            input_shape[2] / (stride ** len(encoder_channels))
         )
         self.flat_dim = (
             encoder_channels[-1]
             * self.encoder_output_height
             * self.encoder_output_width
         )
+
+        # print(f"Expected flat_dim: {self.flat_dim}")
 
         # Build encoder
         encoder_layers = []
@@ -93,7 +95,7 @@ class VAECNN(nn.Module):
         self.fc_decode = nn.Linear(latent_dim, self.flat_dim)
 
         # Build decoder
-        decoder_channels = encoder_channels[::-1] + [input_shape[2]]
+        decoder_channels = encoder_channels[::-1] + [input_shape[0]]
         decoder_layers = [
             UnFlatten(
                 encoder_channels[-1],
@@ -114,13 +116,18 @@ class VAECNN(nn.Module):
                     nn.ReLU() if i < len(decoder_channels) - 2 else nn.Sigmoid(),
                 ]
             )
-        decoder_layers.append(nn.AdaptiveAvgPool2d((input_shape[0], input_shape[1])))
+        decoder_layers.append(nn.AdaptiveAvgPool2d((input_shape[1], input_shape[2])))
         self.decoder = nn.Sequential(*decoder_layers)
 
     def encode(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         h = self.encoder(x)
+        # print(f"Encoder output shape: {h.shape}")
+        # print(
+        #     f"Expected encoder output shape: {torch.Size([x.size(0), self.flat_dim])}"
+        # )
         mu = self.fc_mu(h)
         logvar = self.fc_logvar(h)
+        # print(f"mu shape: {mu.shape}, logvar shape: {logvar.shape}")
         return mu, logvar
 
     def reparameterize(self, mu: torch.Tensor, logvar: torch.Tensor) -> torch.Tensor:
@@ -130,6 +137,8 @@ class VAECNN(nn.Module):
 
     def decode(self, z: torch.Tensor) -> torch.Tensor:
         h = self.fc_decode(z)
+        # print(f"Decoder input shape: {h.shape}")
+        # print(f"Expected decoder input shape: {torch.Size([z.size(0), self.flat_dim])}")
         return self.decoder(h)
 
     def forward(
