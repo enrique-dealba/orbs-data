@@ -16,10 +16,10 @@ stages:
       - data/preprocessed/control1_stack_normalized.npy
       - data/preprocessed/control2_stack_normalized.npy
     outs:
-      - data/split/control1_stack_normalized_train.npy
-      - data/split/control1_stack_normalized_val.npy
-      - data/split/control2_stack_normalized_train.npy
-      - data/split/control2_stack_normalized_val.npy
+      - data/split/control1_stack_normalized.npy_train.npy
+      - data/split/control1_stack_normalized.npy_val.npy
+      - data/split/control2_stack_normalized.npy_train.npy
+      - data/split/control2_stack_normalized.npy_val.npy
       - data/split/split_indices.json
 
   analyze:

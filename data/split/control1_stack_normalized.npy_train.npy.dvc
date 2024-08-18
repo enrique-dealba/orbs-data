@@ -1,0 +1,5 @@
+outs:
+- md5: dba5031942d028b91a84bace17be41c9
+  size: 41705792
+  hash: md5
+  path: control1_stack_normalized.npy_train.npy
