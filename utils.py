@@ -25,3 +25,25 @@ def save_model(model, config, metrics):
 
     print(f"Model saved as {model_path}")
     return model_path
+
+
+import matplotlib.pyplot as plt
+
+def visualize_reconstruction(model, input_tensor):
+    with torch.no_grad():
+        output, _, _ = model(input_tensor)
+    
+    # Convert tensors to numpy arrays and reshape
+    input_img = input_tensor.squeeze().permute(1, 2, 0).cpu().numpy()
+    output_img = output.squeeze().permute(1, 2, 0).cpu().numpy()
+    
+    # Plot
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+    ax1.imshow(input_img)
+    ax1.set_title('Original')
+    ax2.imshow(output_img)
+    ax2.set_title('Reconstruction')
+    plt.show()
+
+# Use in your test_model function
+# visualize_reconstruction(model, random_input)
