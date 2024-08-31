@@ -37,8 +37,8 @@ stages:
       size: 22342448
     - path: train.py
       hash: md5
-      md5: 399822daf9b4d0f0a39723baa500cd94
-      size: 590
+      md5: 109183037b5ab0f03a9684715e917c6e
+      size: 4268
   analyze:
     cmd: python analyze_data.py
     deps:
