@@ -61,12 +61,12 @@ stages:
       size: 672
     - path: analysis_results/intensity_distribution.png
       hash: md5
-      md5: 56b3480e4a35a765a8e2decf37272d17
-      size: 77238
+      md5: bb255e70e1f1eb20012dbb3d9a3a3d56
+      size: 77232
     - path: analysis_results/random_frames.png
       hash: md5
-      md5: 42f374c10e7d1ef298420646c37f3145
-      size: 293247
+      md5: 3eb538b44ae2bc5ea4c2e270c578888e
+      size: 292660
   split_data:
     cmd: python split_data.py
     deps:
