@@ -1,5 +1,32 @@
 # orbs-data
 
+## Setting up with DagsHub
+
+This project uses DagsHub for data version control. To set up:
+
+1. Ensure you have a DagsHub account and access to the repository.
+
+2. Clone the repository:
+```bash
+git clone https://dagshub.com/enrique-dealba/orbs-data.git
+cd orbs-data
+```
+
+3. Set up DVC with DagsHub:
+
+```bash
+dvc remote add -d origin https://dagshub.com/enrique-dealba/orbs-data.dvc
+dvc remote modify origin --local auth basic
+dvc remote modify origin --local user <your-dagshub-username>
+dvc remote modify origin --local password <your-dagshub-token>
+```
+
+4. Pull the data:
+```bash
+dvc pull
+```
+
+
 ## Running the Pipeline
 
 This uses DVC to manage the data processing and analysis pipeline. To run the entire pipeline:
@@ -82,3 +109,16 @@ git commit -m "Add new AVI file"
 git push
 dvc push
 ```
+
+DagsHub Integration
+
+This project is integrated with DagsHub for version control of both code and data. The DagsHub repository can be found at: `https://dagshub.com/enrique-dealba/orbs-data`
+
+To collaborate on this project:
+
+Ensure you have access to the DagsHub repository.
+Follow the setup instructions at the beginning of this README.
+Make your changes locally.
+Push your code changes to git and your data changes to DVC as described in the "Adding New Data" section.
+
+For detailed instructions on integrating DVC with DagsHub, see the [DagsHub DVC Integration Guide](https://dagshub.com/docs/integration_guide/dvc/).
