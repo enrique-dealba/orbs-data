@@ -24,7 +24,7 @@ touch .dvc/config.local
 ```
 
 5. Add your DagsHub credentials to `.dvc/config.local`:
-```toml
+```yaml
 ['remote "origin"']
     auth = basic
     user = <your-dagshub-username>
