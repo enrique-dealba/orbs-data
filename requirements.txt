@@ -3,6 +3,8 @@ numpy
 matplotlib
 seaborn
 dvc
+dvc-gdrive
 scikit-learn
 torch
 wandb
+dagshub
