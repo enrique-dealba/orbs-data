@@ -110,7 +110,7 @@ git push
 dvc push
 ```
 
-DagsHub Integration
+## DagsHub Integration
 
 This project is integrated with DagsHub for version control of both code and data. The DagsHub repository can be found at: `https://dagshub.com/enrique-dealba/orbs-data`
 
