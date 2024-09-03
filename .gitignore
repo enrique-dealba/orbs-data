@@ -3,3 +3,5 @@
 data/split/*.npy
 data/preprocessed/
 analysis_results/
+.dvc/config.local
+*.json
