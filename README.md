@@ -16,12 +16,24 @@ cd orbs-data
 
 ```bash
 dvc remote add -d origin https://dagshub.com/enrique-dealba/orbs-data.dvc
-dvc remote modify origin --local auth basic
-dvc remote modify origin --local user <your-dagshub-username>
-dvc remote modify origin --local password <your-dagshub-token>
 ```
 
-4. Pull the data:
+4. Create a `.dvc/config.local` file (note: this file shouldn't be committed to the repo):
+```bash
+touch .dvc/config.local
+```
+
+5. Add your DagsHub credentials to `.dvc/config.local`:
+```toml
+['remote "origin"']
+    auth = basic
+    user = <your-dagshub-username>
+    password = <your-dagshub-token>
+```
+
+Note: Make sure `.dvc/config.local` is in your `.gitignore`:
+
+6. Pull the data:
 ```bash
 dvc pull
 ```
