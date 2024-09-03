@@ -80,6 +80,7 @@ def main():
     batch_size = 2
     learning_rate = 3e-4
     num_epochs = 10
+    encoder_channels = [4, 8, 16, 32]  # Customizable
 
     wandb.init(
         project="vae-convlstm-noise",
@@ -88,6 +89,7 @@ def main():
             "batch_size": batch_size,
             "learning_rate": learning_rate,
             "num_epochs": num_epochs,
+            "encoder_channels": encoder_channels,
         },
     )
 
@@ -101,7 +103,6 @@ def main():
     val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
     input_shape = train_data.shape[1:]  # Now will be (3, 572, 217)
-    encoder_channels = [4, 8, 16, 32]  # Customizable
     model = VAECNN(input_shape, latent_dim, encoder_channels)
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)

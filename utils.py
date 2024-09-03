@@ -11,7 +11,8 @@ import wandb
 def save_model(model, config, metrics):
     # Creates unique id for each run
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    run_name = f"vae_convlstm_{timestamp}_ld{config.latent_dim}_bs{config.batch_size}_lr{config.learning_rate:.1e}"
+    encoder_channels = str('-'.join(map(str, config.encoder_channels)))
+    run_name = f"vae_cnn_{timestamp}_ld{config.latent_dim}_ec{encoder_channels}_bs{config.batch_size}_lr{config.learning_rate:.1e}"
 
     # Create a directory for saving models if doesn't exist
     os.makedirs("models", exist_ok=True)
@@ -23,6 +24,19 @@ def save_model(model, config, metrics):
     #     {"model_state_dict": model.state_dict(), "config": config, "metrics": metrics},
     #     model_path,
     # )
+
+    print(f"Saving model: {run_name}.pth to models/.")
+
+    config_dict = dict(config)
+
+    torch.save(
+        {
+            'model_state_dict': model.state_dict(),
+            'config': config_dict,
+            'metrics': metrics
+        },
+        f'models/{run_name}.pth'
+    )
 
     # Log the model in wandb
     print(f"Saving model: {model_path} to wandb.")
