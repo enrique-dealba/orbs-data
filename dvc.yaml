@@ -41,4 +41,4 @@ stages:
       - data/split/train_data.npy
       - data/split/val_data.npy
     # outs:
-    #   - models/trained_model.pkl  # TODO: Uncomment when we have model
+    #   - models/trained_model.pth  # TODO: Uncomment when we have model
